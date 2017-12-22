@@ -17,7 +17,9 @@ public class MainActivity extends Activity {
         view.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
             @Override
             public void onGlobalLayout() {
+                view.setPadding(10);
                 view.setPoints(null);
+                view.getViewTreeObserver().removeGlobalOnLayoutListener(this);
             }
         });
     }
