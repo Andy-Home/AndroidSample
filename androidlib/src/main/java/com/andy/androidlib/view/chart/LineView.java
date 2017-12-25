@@ -9,6 +9,7 @@ import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+
 import java.util.ArrayList;
 
 public class LineView extends ViewGroup implements PointView.onTouchListener {
@@ -29,8 +30,10 @@ public class LineView extends ViewGroup implements PointView.onTouchListener {
         setBackgroundColor(Color.GRAY);
         init();
     }
+
     private X_YView xYView;
-    private void init(){
+
+    private void init() {
         xYView = new X_YView(getContext());
     }
 
@@ -57,16 +60,15 @@ public class LineView extends ViewGroup implements PointView.onTouchListener {
 
 
         if (touchIndex != -1) {
-            PointView v = (PointView) getChildAt(touchIndex+1);
+            PointView v = (PointView) getChildAt(touchIndex + 1);
             canvas.drawText("x:" + v.p_x + " y:" + v.p_y, v.p_x, v.p_y - 9, mPaint);
         }
 
-        for (int i = 0; i < pointViewList.size() - 1; i++){
+        for (int i = 0; i < pointViewList.size() - 1; i++) {
             PointView start = pointViewList.get(i);
             PointView end = pointViewList.get(i + 1);
             canvas.drawLine(start.p_x, start.p_y, end.p_x, end.p_y, mPaint);
         }
-
     }
 
     private ArrayList<Point> pointTable;
@@ -86,7 +88,7 @@ public class LineView extends ViewGroup implements PointView.onTouchListener {
         analysis();
     }
 
-    public void setPadding(int padding){
+    public void setPadding(int padding) {
         xYView.setPadding(padding);
     }
 
@@ -95,13 +97,13 @@ public class LineView extends ViewGroup implements PointView.onTouchListener {
         ArrayList<Point> tmp = new ArrayList<>();
         tmp.addAll(points);
         int len = tmp.size();
-        for(int i = 0; i<len; i++){
-            for(int j = i+1; j < len; j++){
+        for (int i = 0; i < len; i++) {
+            for (int j = i + 1; j < len; j++) {
                 Point pre = tmp.get(i);
                 Point suf = tmp.get(j);
-                if(pre.x > suf.x){
+                if (pre.x > suf.x) {
                     tmp.set(i, suf);
-                    tmp.set(j,pre);
+                    tmp.set(j, pre);
                 }
             }
         }
@@ -111,16 +113,16 @@ public class LineView extends ViewGroup implements PointView.onTouchListener {
     private ArrayList<PointView> pointViewList = new ArrayList<>();
 
     private void analysis() {
-        int minX =0, minY = 0, maxX=0, maxY=0;
+        int minX = 0, minY = 0, maxX = 0, maxY = 0;
         int flag = 0;
         for (Point p : pointTable) {
-            if(flag == 0){
+            if (flag == 0) {
                 minX = maxX = p.x;
                 minY = maxY = p.y;
                 flag++;
             }
 
-            if(maxX < p.x){
+            if (maxX < p.x) {
                 maxX = p.x;
             }
 
@@ -128,41 +130,52 @@ public class LineView extends ViewGroup implements PointView.onTouchListener {
                 maxY = p.y;
             }
 
-            if(minX > p.x){
+            if (minX > p.x) {
                 minX = p.x;
             }
 
-            if(minY > p.y){
+            if (minY > p.y) {
                 minY = p.y;
             }
         }
-        //判断XY轴类型
-        if((maxX < 0 && maxY < 0)||(minX >0 && minY > 0)|| (maxX <0 && minY > 0)||(minX > 0 && maxY < 0)){
-            xYView.setStyle(X_YView.Style.SX_SY);
-        }else if((minX < 0 && maxX > 0 && minY > 0)||(minX < 0 && maxX > 0 && maxY < 0)){
-            xYView.setStyle(X_YView.Style.X_SY);
-        }else if ((minY < 0 && maxY > 0 && minX > 0)||(minY < 0 && maxY > 0 && maxX <0)){
-            xYView.setStyle(X_YView.Style.SX_Y);
-        }else{
-            xYView.setStyle(X_YView.Style.X_Y);
-        }
-        addView(xYView);
 
         double scalX = 1, scalY = 1;
-        int width = getWidth()- 2*xYView.padding;
+        int width = getWidth() - 2 * xYView.padding;
         if ((maxX - minX) > width && width != 0) {
             scalX = (width * 1f - 30) / (maxX - minX);
         }
 
-        int height = getHeight() - 2*xYView.padding;
+        int height = getHeight() - 2 * xYView.padding;
         if ((maxY - minY) > height && height != 0) {
             scalY = (height * 1f - 30) / (maxY - minY);
         }
+        //XY轴原点
+        Point point = new Point();
+
+        //判断XY轴类型
+        if ((maxX < 0 && maxY < 0) || (minX > 0 && minY > 0) || (maxX < 0 && minY > 0) || (minX > 0 && maxY < 0)) {
+            point.x = xYView.padding;
+            point.y = getHeight() - 2 * xYView.padding;
+            xYView.setStyle(X_YView.Style.SX_SY, point);
+        } else if ((minX < 0 && maxX > 0 && minY > 0) || (minX < 0 && maxX > 0 && maxY < 0)) {
+            point.x = (int) scalX * Math.abs(minX);
+            point.y = getHeight() - 2 * xYView.padding;
+            xYView.setStyle(X_YView.Style.X_SY, point);
+        } else if ((minY < 0 && maxY > 0 && minX > 0) || (minY < 0 && maxY > 0 && maxX < 0)) {
+            point.x = xYView.padding;
+            point.y = (int) scalY * maxY;
+            xYView.setStyle(X_YView.Style.SX_Y, point);
+        } else {
+            point.x = (int) scalX * Math.abs(minX);
+            point.y = (int) scalY * maxY;
+            xYView.setStyle(X_YView.Style.X_Y, point);
+        }
+        addView(xYView);
 
         int index = 0;
         for (Point p : pointTable) {
             PointView view = new PointView(getContext());
-            view.setPosition((int) ((p.x-minX) *scalX)+xYView.padding, (int) (height - ((p.y+minY) * scalY)) -xYView.padding);
+            view.setPosition((int) ((p.x - minX) * scalX) + xYView.padding, (int) (height - ((p.y + minY) * scalY)) - xYView.padding);
             view.setTouchListener(index, this);
             index++;
             addView(view);
