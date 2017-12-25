@@ -9,6 +9,8 @@ import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 
+import com.andy.androidlib.view.DPValue;
+
 public class PointView extends View {
     public PointView(Context context) {
         super(context);
@@ -29,6 +31,12 @@ public class PointView extends View {
         p_y = y;
     }
 
+    public String msg;
+
+    public void setMessage(String msg) {
+        this.msg = msg;
+    }
+
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
         super.onMeasure(widthMeasureSpec, heightMeasureSpec);
@@ -40,7 +48,7 @@ public class PointView extends View {
         mPaint.setAntiAlias(true);
         mPaint.setStyle(Paint.Style.FILL);
         mPaint.setColor(Color.RED);
-        canvas.drawCircle(4, 4, 4, mPaint);
+        canvas.drawCircle(DPValue.dp2px(14), DPValue.dp2px(14), DPValue.dp2px(14), mPaint);
     }
 
     @Override

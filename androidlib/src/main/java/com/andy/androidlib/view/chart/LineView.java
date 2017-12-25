@@ -10,6 +10,8 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 
+import com.andy.androidlib.view.DPValue;
+
 import java.util.ArrayList;
 
 public class LineView extends ViewGroup implements PointView.onTouchListener {
@@ -30,21 +32,28 @@ public class LineView extends ViewGroup implements PointView.onTouchListener {
         setBackgroundColor(Color.GRAY);
         init();
     }
-
     private X_YView xYView;
+    private Paint mPaint;
 
     private void init() {
         xYView = new X_YView(getContext());
+        mPaint = new Paint();
+        mPaint.setAntiAlias(true);
+        mPaint.setStrokeWidth(DPValue.dp2px(2));
+        mPaint.setStyle(Paint.Style.FILL);
+        mPaint.setColor(Color.RED);
+        mPaint.setTextSize(DPValue.dp2px(40));
     }
 
     @Override
     protected void onLayout(boolean changed, int l, int t, int r, int b) {
+        int radius = DPValue.dp2px(14);
         for (int index = 0; index < getChildCount(); index++) {
             View v = getChildAt(index);
             if (v instanceof PointView) {
                 int x = ((PointView) v).p_x;
                 int y = ((PointView) v).p_y;
-                v.layout(x - 4, y - 4, x + 4, y + 4);
+                v.layout(x - radius, y - radius, x + radius, y + radius);
             } else {
                 v.layout(l, t, r, b);
             }
@@ -53,15 +62,10 @@ public class LineView extends ViewGroup implements PointView.onTouchListener {
 
     @Override
     protected void onDraw(Canvas canvas) {
-        Paint mPaint = new Paint();
-        mPaint.setAntiAlias(true);
-        mPaint.setStyle(Paint.Style.FILL);
-        mPaint.setColor(Color.RED);
-
 
         if (touchIndex != -1) {
             PointView v = (PointView) getChildAt(touchIndex + 1);
-            canvas.drawText("x:" + v.p_x + " y:" + v.p_y, v.p_x, v.p_y - 9, mPaint);
+            canvas.drawText(v.msg, v.p_x + DPValue.dp2px(14), v.p_y - DPValue.dp2px(14), mPaint);
         }
 
         for (int i = 0; i < pointViewList.size() - 1; i++) {
@@ -69,6 +73,7 @@ public class LineView extends ViewGroup implements PointView.onTouchListener {
             PointView end = pointViewList.get(i + 1);
             canvas.drawLine(start.p_x, start.p_y, end.p_x, end.p_y, mPaint);
         }
+
     }
 
     private ArrayList<Point> pointTable;
@@ -77,7 +82,7 @@ public class LineView extends ViewGroup implements PointView.onTouchListener {
         if (points == null) {
             points = new ArrayList<>();
             points.add(new Point(180, 700));
-            points.add(new Point(220, 110));
+            points.add(new Point(220, -110));
             points.add(new Point(260, 130));
             points.add(new Point(340, 130));
             points.add(new Point(100, 900));
@@ -175,8 +180,9 @@ public class LineView extends ViewGroup implements PointView.onTouchListener {
         int index = 0;
         for (Point p : pointTable) {
             PointView view = new PointView(getContext());
-            view.setPosition((int) ((p.x - minX) * scalX) + xYView.padding, (int) (height - ((p.y + minY) * scalY)) - xYView.padding);
+            view.setPosition((int) (p.x * scalX) + point.x, point.y - (int) (p.y * scalY));
             view.setTouchListener(index, this);
+            view.setMessage("x:" + p.x + " y:" + p.y);
             index++;
             addView(view);
             pointViewList.add(view);
