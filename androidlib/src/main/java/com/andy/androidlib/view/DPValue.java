@@ -2,6 +2,7 @@ package com.andy.androidlib.view;
 
 import android.app.Activity;
 import android.content.Context;
+import android.util.Log;
 
 /**
  * 根据屏幕分辨率获取1dp中的像素大小
@@ -30,6 +31,7 @@ public class DPValue {
 
     public void init(Context context) {
         scale = context.getResources().getDisplayMetrics().density;
+        Log.d("DPValue", "scale:" + scale);
     }
 
     /**

@@ -9,10 +9,11 @@ import android.util.AttributeSet;
 import android.util.Log;
 import android.view.View;
 
+import com.andy.androidlib.view.Colors;
 import com.andy.androidlib.view.DPValue;
 
 public class X_YView extends View{
-
+    final String TAG = getClass().getSimpleName();
     public X_YView(Context context) {
         super(context);
         init();
@@ -32,9 +33,9 @@ public class X_YView extends View{
 
     private void init(){
         mPaint = new Paint();
-        mPaint.setAntiAlias(true);
         mPaint.setStyle(Paint.Style.FILL);
-        mPaint.setColor(Color.RED);
+        mPaint.setStrokeWidth(DPValue.dp2px(1));
+        mPaint.setColor(Colors.RoyalBlue);
     }
 
     public int padding = 0;
@@ -66,19 +67,20 @@ public class X_YView extends View{
         }
     }
 
-    private int style;
+    public int style;
     private Point origin = new Point(0, 0);
 
     public void setStyle(int style, Point origin) {
         this.style = style;
         this.origin = origin;
+        Log.d(TAG, "x:" + origin.x + " y:" + origin.y);
     }
 
     public static class Style{
-        public static int SX_SY = 1;
-        public static int SX_Y = 2;
-        public static int X_Y = 3;
-        public static int X_SY = 4;
-        public static int NOT_VALUE = 5;
+        static int SX_SY = 1;
+        static int SX_Y = 2;
+        static int X_Y = 3;
+        static int X_SY = 4;
+        static int NOT_VALUE = 5;
     }
 }

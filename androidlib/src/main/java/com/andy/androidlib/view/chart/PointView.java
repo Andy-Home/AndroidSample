@@ -9,9 +9,11 @@ import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 
+import com.andy.androidlib.view.Colors;
 import com.andy.androidlib.view.DPValue;
 
 public class PointView extends View {
+    final String TAG = getClass().getSimpleName();
     public PointView(Context context) {
         super(context);
     }
@@ -27,6 +29,7 @@ public class PointView extends View {
     public int p_x, p_y;
 
     public void setPosition(int x, int y) {
+        Log.d(TAG, "x:" + x + " y:" + y);
         p_x = x;
         p_y = y;
     }
@@ -47,21 +50,13 @@ public class PointView extends View {
         Paint mPaint = new Paint();
         mPaint.setAntiAlias(true);
         mPaint.setStyle(Paint.Style.FILL);
-        mPaint.setColor(Color.RED);
-        canvas.drawCircle(DPValue.dp2px(14), DPValue.dp2px(14), DPValue.dp2px(14), mPaint);
+        mPaint.setColor(Colors.LightGreen);
+        canvas.drawCircle(DPValue.dp2px(6), DPValue.dp2px(6), DPValue.dp2px(6), mPaint);
     }
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
         touchListener.onTouch(index, event);
-        switch (event.getAction()) {
-            case MotionEvent.ACTION_DOWN:
-                Log.d("PointView", "ACTION_DOWN");
-                break;
-            case MotionEvent.ACTION_UP:
-                Log.d("PointView", "ACTION_UP");
-                break;
-        }
         return true;
     }
 
@@ -74,6 +69,6 @@ public class PointView extends View {
     }
 
     public interface onTouchListener {
-        public void onTouch(int index, MotionEvent event);
+        void onTouch(int index, MotionEvent event);
     }
 }

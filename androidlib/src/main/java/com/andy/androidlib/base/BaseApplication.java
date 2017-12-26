@@ -8,7 +8,7 @@ import com.andy.androidlib.view.DPValue;
  * Created by Administrator on 2017/12/23.
  */
 
-public class BaseApplication extends Application {
+public abstract class BaseApplication extends Application {
     @Override
     public void onCreate() {
         super.onCreate();
