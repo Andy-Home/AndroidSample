@@ -20,6 +20,7 @@ public class MainActivity extends Activity {
             public void onGlobalLayout() {
                 view.setPadding(10);
                 view.setPoints(null);
+                view.setAnimation(4000);
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
                     view.getViewTreeObserver().removeOnGlobalLayoutListener(this);
                 } else {

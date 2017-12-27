@@ -73,10 +73,8 @@ public class LineView extends ViewGroup implements PointView.onTouchListener {
     }
 
     private int currentX = 0;
-    private int flag = 0;
     @Override
     protected void onDraw(final Canvas canvas) {
-        Log.d(TAG, "Draw:" + flag++);
         if (touchIndex != -1) {
             PointView v = (PointView) getChildAt(touchIndex + 1);
             canvas.drawText(v.msg, v.p_x + DPValue.dp2px(14), v.p_y - DPValue.dp2px(14), mTextPaint);
@@ -94,16 +92,16 @@ public class LineView extends ViewGroup implements PointView.onTouchListener {
             PointView end = pointViewList.get(i + 1);
             canvas.drawLine(start.p_x, start.p_y, end.p_x, end.p_y, mPaint);
         }
-        Log.d(TAG, "endIndex:" + endIndex + " currentX:" + currentX);
-        Log.d(TAG, "px:" + pointViewList.get(endIndex).p_x);
+        //Log.d(TAG, "endIndex:" + endIndex);
         if ((pointViewList.get(endIndex).p_x < currentX) && (endIndex != pointViewList.size() - 1)) {
-            Log.d(TAG, "多余绘画");
             PointView start = pointViewList.get(endIndex);
             PointView next = pointViewList.get(endIndex + 1);
-            float gradient = (next.p_y - start.p_y) / (next.p_x - start.p_x);
-            Log.d(TAG, "gradient:" + gradient);
-            canvas.drawLine(start.p_x, start.p_y, currentX, (currentX - start.p_x) * gradient + start.p_x, mPaint);
+            float gradient = (next.p_y - start.p_y) * 1f / (next.p_x - start.p_x);
+            //Log.d(TAG, "gradient:"+gradient + " currentX:"+currentX+" startY:"+start.p_y);
+            //Log.d(TAG, "Y:"+(currentX * gradient + start.p_y));
+            canvas.drawLine(start.p_x, start.p_y, currentX, (currentX - start.p_x) * gradient + start.p_y, mPaint);
         }
+
     }
 
     /**
@@ -111,20 +109,38 @@ public class LineView extends ViewGroup implements PointView.onTouchListener {
      */
     private int indexAnimation() {
         int start = 0;
-        int fontStart = 0;
+        int index = 0;
         int end = pointViewList.size() - 1;
+        //Log.d(TAG, "currentX:"+currentX);
+        int middle;
         while (start <= end) {
-            int middle = (start + end) / 2;
-            if (pointViewList.get(middle).p_x > currentX) {
-                end = middle - 1;
-            } else if (pointViewList.get(middle).p_x < currentX) {
-                fontStart = start;
-                start = middle + 1;
-            } else {
+
+            middle = (start + end) / 2;
+            if (middle == pointViewList.size() - 1 || middle == 0) {
                 return middle;
             }
+            //Log.d(TAG, "start="+start+ " middle:"+middle+ " end:"+end);
+            if (pointViewList.get(middle).p_x > currentX &&
+                    !(pointViewList.get(middle - 1).p_x < currentX)) {
+                end = middle - 1;
+            } else if (pointViewList.get(middle).p_x < currentX &&
+                    !(pointViewList.get(middle + 1).p_x > currentX)) {
+                start = middle + 1;
+            } else if (pointViewList.get(middle).p_x > currentX &&
+                    pointViewList.get(middle - 1).p_x < currentX) {
+                index = middle - 1;
+                break;
+            } else if (pointViewList.get(middle).p_x < currentX &&
+                    pointViewList.get(middle + 1).p_x > currentX) {
+                index = middle;
+                break;
+            } else if (pointViewList.get(middle).p_x == currentX) {
+                index = middle;
+                break;
+            }
         }
-        return fontStart;
+        //Log.d(TAG, "start="+start+ " index:"+index+ " end:"+end);
+        return index;
     }
 
     private ArrayList<Point> pointTable;
@@ -132,15 +148,16 @@ public class LineView extends ViewGroup implements PointView.onTouchListener {
     public void setPoints(ArrayList<Point> points) {
         if (points == null) {
             points = new ArrayList<>();
-            points.add(new Point(180, 700));
+            points.add(new Point(-180, 700));
             points.add(new Point(220, 110));
-            points.add(new Point(260, 130));
+            points.add(new Point(260, -130));
             points.add(new Point(340, 130));
             points.add(new Point(100, 900));
             points.add(new Point(140, 150));
             points.add(new Point(300, 10));
         }
         pointTable = sort(points);
+
         analysis();
     }
 
@@ -153,7 +170,7 @@ public class LineView extends ViewGroup implements PointView.onTouchListener {
         xYView.setPadding(DPValue.dp2px(padding));
     }
 
-    //依据X轴从小到大排序
+    //依据X轴从小到大排序(冒泡排序)
     private ArrayList<Point> sort(ArrayList<Point> points) {
         ArrayList<Point> tmp = new ArrayList<>();
         tmp.addAll(points);
@@ -256,8 +273,10 @@ public class LineView extends ViewGroup implements PointView.onTouchListener {
             addView(view);
             pointViewList.add(view);
         }
-        //invalidate();
-        setAnimation(0);
+        for (PointView p : pointViewList) {
+            Log.d(TAG, "" + p.p_x);
+        }
+        invalidate();
     }
 
     private int touchIndex = -1;
@@ -275,28 +294,43 @@ public class LineView extends ViewGroup implements PointView.onTouchListener {
         invalidate();
     }
 
-    @TargetApi(Build.VERSION_CODES.HONEYCOMB)
-    public void setAnimation(int timeLength) {
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                while (currentX < 300) {
-                    post(new Runnable() {
-                        @Override
-                        public void run() {
-                            invalidate();
-                        }
-                    });
-                    try {
-                        Thread.currentThread().sleep(1000);
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
-                    currentX += 10;
-                    Log.d(TAG, "currentX:" + currentX);
+    public void setAnimation(final int timeLength) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
+            ValueAnimator anim = ValueAnimator.ofInt(pointViewList.get(0).p_x, pointViewList.get(pointViewList.size() - 1).p_x);
+            anim.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+                @Override
+                public void onAnimationUpdate(ValueAnimator animation) {
+                    currentX = (Integer) animation.getAnimatedValue();
+                    invalidate();
                 }
+            });
+            anim.setDuration(timeLength);
+            anim.start();
+        } else {
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    currentX = pointViewList.get(0).p_x;
+                    int maxX = pointViewList.get(pointViewList.size() - 1).p_x;
+                    int period = timeLength / (maxX - currentX);
+                    while (currentX <= maxX) {
+                        post(new Runnable() {
+                            @Override
+                            public void run() {
+                                invalidate();
+                            }
+                        });
+                        try {
+                            Thread.currentThread().sleep(period);
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
+                        currentX += 1;
+                    }
 
-            }
-        }).start();
+                }
+            }).start();
+        }
+
     }
 }
