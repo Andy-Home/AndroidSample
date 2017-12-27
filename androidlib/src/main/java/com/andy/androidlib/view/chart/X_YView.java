@@ -73,7 +73,6 @@ public class X_YView extends View{
     public void setStyle(int style, Point origin) {
         this.style = style;
         this.origin = origin;
-        Log.d(TAG, "x:" + origin.x + " y:" + origin.y);
     }
 
     public static class Style{

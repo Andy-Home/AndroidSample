@@ -1,10 +1,14 @@
 package com.andy.androidlib.view.chart;
 
+import android.animation.ValueAnimator;
+import android.annotation.TargetApi;
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Point;
+import android.os.Build;
+import android.os.Looper;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.MotionEvent;
@@ -18,6 +22,7 @@ import com.andy.androidlib.view.DPValue;
 import java.util.ArrayList;
 
 public class LineView extends ViewGroup implements PointView.onTouchListener {
+    final String TAG = getClass().getSimpleName();
     public LineView(Context context) {
         super(context);
         setBackgroundColor(Color.WHITE);
@@ -67,18 +72,59 @@ public class LineView extends ViewGroup implements PointView.onTouchListener {
         }
     }
 
+    private int currentX = 0;
+    private int flag = 0;
     @Override
-    protected void onDraw(Canvas canvas) {
+    protected void onDraw(final Canvas canvas) {
+        Log.d(TAG, "Draw:" + flag++);
         if (touchIndex != -1) {
             PointView v = (PointView) getChildAt(touchIndex + 1);
             canvas.drawText(v.msg, v.p_x + DPValue.dp2px(14), v.p_y - DPValue.dp2px(14), mTextPaint);
         }
+        /*for (int i = 0; i < pointViewList.size() - 1; i++) {
+            PointView start = pointViewList.get(i);
+            PointView end = pointViewList.get(i + 1);
+            canvas.drawLine(start.p_x, start.p_y, end.p_x, end.p_y, mPaint);
+            Log.d(TAG, "drawLine");
+        }*/
+        int endIndex = indexAnimation();
 
-        for (int i = 0; i < pointViewList.size() - 1; i++) {
+        for (int i = 0; i < endIndex; i++) {
             PointView start = pointViewList.get(i);
             PointView end = pointViewList.get(i + 1);
             canvas.drawLine(start.p_x, start.p_y, end.p_x, end.p_y, mPaint);
         }
+        Log.d(TAG, "endIndex:" + endIndex + " currentX:" + currentX);
+        Log.d(TAG, "px:" + pointViewList.get(endIndex).p_x);
+        if ((pointViewList.get(endIndex).p_x < currentX) && (endIndex != pointViewList.size() - 1)) {
+            Log.d(TAG, "多余绘画");
+            PointView start = pointViewList.get(endIndex);
+            PointView next = pointViewList.get(endIndex + 1);
+            float gradient = (next.p_y - start.p_y) / (next.p_x - start.p_x);
+            Log.d(TAG, "gradient:" + gradient);
+            canvas.drawLine(start.p_x, start.p_y, currentX, (currentX - start.p_x) * gradient + start.p_x, mPaint);
+        }
+    }
+
+    /**
+     * 根据 currentX 的值采用二分查找法从 pointViewList获取动画绘画位置
+     */
+    private int indexAnimation() {
+        int start = 0;
+        int fontStart = 0;
+        int end = pointViewList.size() - 1;
+        while (start <= end) {
+            int middle = (start + end) / 2;
+            if (pointViewList.get(middle).p_x > currentX) {
+                end = middle - 1;
+            } else if (pointViewList.get(middle).p_x < currentX) {
+                fontStart = start;
+                start = middle + 1;
+            } else {
+                return middle;
+            }
+        }
+        return fontStart;
     }
 
     private ArrayList<Point> pointTable;
@@ -204,14 +250,14 @@ public class LineView extends ViewGroup implements PointView.onTouchListener {
             } else if (xYView.style == X_YView.Style.X_Y) {
                 view.setPosition((int) (p.x * scalX) + point.x, point.y - (int) (p.y * scalY));
             }
-            //view.setPosition((int) (p.x * scalX) + point.x, point.y - (int) (p.y * scalY));
             view.setTouchListener(index, this);
             view.setMessage("x:" + p.x + " y:" + p.y);
             index++;
             addView(view);
             pointViewList.add(view);
         }
-        invalidate();
+        //invalidate();
+        setAnimation(0);
     }
 
     private int touchIndex = -1;
@@ -227,5 +273,30 @@ public class LineView extends ViewGroup implements PointView.onTouchListener {
                 break;
         }
         invalidate();
+    }
+
+    @TargetApi(Build.VERSION_CODES.HONEYCOMB)
+    public void setAnimation(int timeLength) {
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                while (currentX < 300) {
+                    post(new Runnable() {
+                        @Override
+                        public void run() {
+                            invalidate();
+                        }
+                    });
+                    try {
+                        Thread.currentThread().sleep(1000);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                    currentX += 10;
+                    Log.d(TAG, "currentX:" + currentX);
+                }
+
+            }
+        }).start();
     }
 }

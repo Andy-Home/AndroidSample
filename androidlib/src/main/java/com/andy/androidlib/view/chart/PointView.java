@@ -29,7 +29,6 @@ public class PointView extends View {
     public int p_x, p_y;
 
     public void setPosition(int x, int y) {
-        Log.d(TAG, "x:" + x + " y:" + y);
         p_x = x;
         p_y = y;
     }
