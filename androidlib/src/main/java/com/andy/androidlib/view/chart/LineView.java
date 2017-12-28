@@ -7,6 +7,7 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.DashPathEffect;
 import android.graphics.Paint;
+import android.graphics.Path;
 import android.graphics.Point;
 import android.os.Build;
 import android.os.Looper;
@@ -61,7 +62,9 @@ public class LineView extends ViewGroup implements PointView.onTouchListener {
 
         mDashPaint = new Paint();
         mDashPaint.setStrokeWidth(DPValue.dp2px(1));
-        mDashPaint.setPathEffect(new DashPathEffect(new float[]{5, 5}, 0));
+        mDashPaint.setStyle(Paint.Style.STROKE);
+        mDashPaint.setColor(Colors.Navy);
+        mDashPaint.setPathEffect(new DashPathEffect(new float[]{10f, 10f, 10f, 10f}, 0));
     }
 
     @Override
@@ -87,15 +90,21 @@ public class LineView extends ViewGroup implements PointView.onTouchListener {
         //点击PointView后的显示
         if (touchIndex != -1) {
             PointView v = (PointView) getChildAt(touchIndex + 1);
+            //画虚线
+            Path path = new Path();
+            path.moveTo(v.p_x, v.p_y);
+            path.lineTo(xYView.origin.x, v.p_y);        //y
 
-            canvas.drawLine(v.p_x, v.p_y, xYView.origin.x, v.p_y, mDashPaint); //Y
+            path.moveTo(v.p_x, v.p_y);
+            path.lineTo(v.p_x, xYView.origin.y);        //x
+            canvas.drawPath(path, mDashPaint);
+
             if (v.p_y > DPValue.dp2px(15)) {
                 canvas.drawText(v.y, xYView.origin.x, v.p_y, mTextPaint);
             } else {
                 canvas.drawText(v.y, xYView.origin.x, v.p_y + DPValue.dp2px(12), mTextPaint);
             }
 
-            canvas.drawLine(v.p_x, v.p_y, v.p_x, xYView.origin.y, mDashPaint);//X
             if (v.p_x < getWidth() - DPValue.dp2px(15)) {
                 canvas.drawText(v.x, v.p_x, xYView.origin.y, mTextPaint);
             } else {
@@ -296,37 +305,55 @@ public class LineView extends ViewGroup implements PointView.onTouchListener {
         switch (event.getAction()) {
             case MotionEvent.ACTION_DOWN:
                 touchIndex = index;
+                invalidate();
                 break;
             case MotionEvent.ACTION_UP:
                 touchIndex = -1;
+                invalidate();
                 break;
         }
-        invalidate();
     }
 
+    public class TouchEventCountThread implements Runnable {
+        public int touchCount = 0;
+
+        @Override
+        public void run() {
+            touchCount = 0;
+        }
+    }
+
+    TouchEventCountThread mTouchEventCount = new TouchEventCountThread();
     @Override
     public boolean onTouchEvent(MotionEvent event) {
         super.onTouchEvent(event);
         switch (event.getAction()) {
             case MotionEvent.ACTION_DOWN:
-                Log.d(TAG, "按下");
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
-                    if (animator != null && animator.isRunning()) {
-                        animator.cancel();
-                    }
-                } else {
-                    if (animatorThread != null && animatorThread.isAlive()) {
-                        animatorThread.interrupt();
-                    }
+                if (0 == mTouchEventCount.touchCount) {
+                    postDelayed(mTouchEventCount, 500);
                 }
-                currentX = pointViewList.get(pointViewList.size() - 1).p_x;
-                invalidate();
+                break;
+            case MotionEvent.ACTION_UP:
+                mTouchEventCount.touchCount++;
+                if (mTouchEventCount.touchCount > 1) {
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
+                        if (animator != null && animator.isRunning()) {
+                            animator.cancel();
+                        }
+                    } else {
+                        if (animatorThread != null && animatorThread.isAlive()) {
+                            animatorThread.interrupt();
+                        }
+                    }
+                    currentX = pointViewList.get(pointViewList.size() - 1).p_x;
+                    invalidate();
+                }
                 break;
         }
-        return super.onTouchEvent(event);
+        return true;
     }
 
-    private int timeLength = 0;
+    private int timeLength = 3000;
     public void setAnimation(final int timeLength) {
         this.timeLength = timeLength;
     }
@@ -372,4 +399,5 @@ public class LineView extends ViewGroup implements PointView.onTouchListener {
             animatorThread.start();
         }
     }
+
 }

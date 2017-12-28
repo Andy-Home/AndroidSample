@@ -27,7 +27,7 @@ public class PointView extends View {
     }
 
     public int p_x, p_y;
-    public final static int radius = 6;
+    public final static int radius = DPValue.dp2px(6);
 
     public void setPosition(int x, int y) {
         p_x = x;
@@ -58,7 +58,7 @@ public class PointView extends View {
         mPaint.setAntiAlias(true);
         mPaint.setStyle(Paint.Style.FILL);
         mPaint.setColor(Colors.LightGreen);
-        canvas.drawCircle(DPValue.dp2px(radius), DPValue.dp2px(radius), DPValue.dp2px(radius), mPaint);
+        canvas.drawCircle(radius, radius, radius, mPaint);
     }
 
     @Override
