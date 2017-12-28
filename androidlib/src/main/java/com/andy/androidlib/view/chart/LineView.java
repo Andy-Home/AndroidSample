@@ -59,7 +59,7 @@ public class LineView extends ViewGroup implements PointView.onTouchListener {
 
     @Override
     protected void onLayout(boolean changed, int l, int t, int r, int b) {
-        int radius = DPValue.dp2px(6);
+        int radius = PointView.radius;
         for (int index = 0; index < getChildCount(); index++) {
             View v = getChildAt(index);
             if (v instanceof PointView) {
@@ -73,32 +73,31 @@ public class LineView extends ViewGroup implements PointView.onTouchListener {
     }
 
     private int currentX = 0;
+    private int viewIndex = -1;
     @Override
     protected void onDraw(final Canvas canvas) {
         if (touchIndex != -1) {
             PointView v = (PointView) getChildAt(touchIndex + 1);
             canvas.drawText(v.msg, v.p_x + DPValue.dp2px(14), v.p_y - DPValue.dp2px(14), mTextPaint);
         }
-        /*for (int i = 0; i < pointViewList.size() - 1; i++) {
-            PointView start = pointViewList.get(i);
-            PointView end = pointViewList.get(i + 1);
-            canvas.drawLine(start.p_x, start.p_y, end.p_x, end.p_y, mPaint);
-            Log.d(TAG, "drawLine");
-        }*/
         int endIndex = indexAnimation();
 
+        if (endIndex > viewIndex) {
+            viewIndex = endIndex;
+            addView(pointViewList.get(endIndex));
+        }
+
+        //连线
         for (int i = 0; i < endIndex; i++) {
             PointView start = pointViewList.get(i);
             PointView end = pointViewList.get(i + 1);
             canvas.drawLine(start.p_x, start.p_y, end.p_x, end.p_y, mPaint);
         }
-        //Log.d(TAG, "endIndex:" + endIndex);
+        //画尾线
         if ((pointViewList.get(endIndex).p_x < currentX) && (endIndex != pointViewList.size() - 1)) {
             PointView start = pointViewList.get(endIndex);
             PointView next = pointViewList.get(endIndex + 1);
             float gradient = (next.p_y - start.p_y) * 1f / (next.p_x - start.p_x);
-            //Log.d(TAG, "gradient:"+gradient + " currentX:"+currentX+" startY:"+start.p_y);
-            //Log.d(TAG, "Y:"+(currentX * gradient + start.p_y));
             canvas.drawLine(start.p_x, start.p_y, currentX, (currentX - start.p_x) * gradient + start.p_y, mPaint);
         }
 
@@ -111,15 +110,13 @@ public class LineView extends ViewGroup implements PointView.onTouchListener {
         int start = 0;
         int index = 0;
         int end = pointViewList.size() - 1;
-        //Log.d(TAG, "currentX:"+currentX);
         int middle;
         while (start <= end) {
-
             middle = (start + end) / 2;
             if (middle == pointViewList.size() - 1 || middle == 0) {
                 return middle;
             }
-            //Log.d(TAG, "start="+start+ " middle:"+middle+ " end:"+end);
+
             if (pointViewList.get(middle).p_x > currentX &&
                     !(pointViewList.get(middle - 1).p_x < currentX)) {
                 end = middle - 1;
@@ -139,7 +136,6 @@ public class LineView extends ViewGroup implements PointView.onTouchListener {
                 break;
             }
         }
-        //Log.d(TAG, "start="+start+ " index:"+index+ " end:"+end);
         return index;
     }
 
@@ -148,13 +144,6 @@ public class LineView extends ViewGroup implements PointView.onTouchListener {
     public void setPoints(ArrayList<Point> points) {
         if (points == null) {
             points = new ArrayList<>();
-            points.add(new Point(-180, 700));
-            points.add(new Point(220, 110));
-            points.add(new Point(260, -130));
-            points.add(new Point(340, 130));
-            points.add(new Point(100, 900));
-            points.add(new Point(140, 150));
-            points.add(new Point(300, 10));
         }
         pointTable = sort(points);
 
@@ -270,13 +259,11 @@ public class LineView extends ViewGroup implements PointView.onTouchListener {
             view.setTouchListener(index, this);
             view.setMessage("x:" + p.x + " y:" + p.y);
             index++;
-            addView(view);
             pointViewList.add(view);
         }
         for (PointView p : pointViewList) {
             Log.d(TAG, "" + p.p_x);
         }
-        invalidate();
     }
 
     private int touchIndex = -1;
@@ -294,7 +281,12 @@ public class LineView extends ViewGroup implements PointView.onTouchListener {
         invalidate();
     }
 
+    private int timeLength = 0;
     public void setAnimation(final int timeLength) {
+        this.timeLength = timeLength;
+    }
+
+    public void start() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
             ValueAnimator anim = ValueAnimator.ofInt(pointViewList.get(0).p_x, pointViewList.get(pointViewList.size() - 1).p_x);
             anim.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
@@ -331,6 +323,5 @@ public class LineView extends ViewGroup implements PointView.onTouchListener {
                 }
             }).start();
         }
-
     }
 }
