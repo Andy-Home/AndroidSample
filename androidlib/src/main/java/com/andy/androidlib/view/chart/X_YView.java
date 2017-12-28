@@ -68,7 +68,7 @@ public class X_YView extends View{
     }
 
     public int style;
-    private Point origin = new Point(0, 0);
+    public Point origin = new Point(0, 0);
 
     public void setStyle(int style, Point origin) {
         this.style = style;

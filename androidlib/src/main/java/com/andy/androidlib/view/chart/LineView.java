@@ -5,12 +5,14 @@ import android.annotation.TargetApi;
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Color;
+import android.graphics.DashPathEffect;
 import android.graphics.Paint;
 import android.graphics.Point;
 import android.os.Build;
 import android.os.Looper;
 import android.util.AttributeSet;
 import android.util.Log;
+import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
@@ -40,8 +42,9 @@ public class LineView extends ViewGroup implements PointView.onTouchListener {
         setBackgroundColor(Color.WHITE);
         init();
     }
+
     private X_YView xYView;
-    private Paint mPaint, mTextPaint;
+    private Paint mPaint, mTextPaint, mDashPaint;
 
     private void init() {
         xYView = new X_YView(getContext());
@@ -55,6 +58,10 @@ public class LineView extends ViewGroup implements PointView.onTouchListener {
         mTextPaint.setAntiAlias(true);
         mTextPaint.setColor(Colors.Navy);
         mTextPaint.setTextSize(DPValue.dp2px(12));
+
+        mDashPaint = new Paint();
+        mDashPaint.setStrokeWidth(DPValue.dp2px(1));
+        mDashPaint.setPathEffect(new DashPathEffect(new float[]{5, 5}, 0));
     }
 
     @Override
@@ -74,17 +81,37 @@ public class LineView extends ViewGroup implements PointView.onTouchListener {
 
     private int currentX = 0;
     private int viewIndex = -1;
+
     @Override
     protected void onDraw(final Canvas canvas) {
+        //点击PointView后的显示
         if (touchIndex != -1) {
             PointView v = (PointView) getChildAt(touchIndex + 1);
-            canvas.drawText(v.msg, v.p_x + DPValue.dp2px(14), v.p_y - DPValue.dp2px(14), mTextPaint);
+
+            canvas.drawLine(v.p_x, v.p_y, xYView.origin.x, v.p_y, mDashPaint); //Y
+            if (v.p_y > DPValue.dp2px(15)) {
+                canvas.drawText(v.y, xYView.origin.x, v.p_y, mTextPaint);
+            } else {
+                canvas.drawText(v.y, xYView.origin.x, v.p_y + DPValue.dp2px(12), mTextPaint);
+            }
+
+            canvas.drawLine(v.p_x, v.p_y, v.p_x, xYView.origin.y, mDashPaint);//X
+            if (v.p_x < getWidth() - DPValue.dp2px(15)) {
+                canvas.drawText(v.x, v.p_x, xYView.origin.y, mTextPaint);
+            } else {
+                canvas.drawText(v.x, v.p_x - DPValue.dp2px(15), xYView.origin.y, mTextPaint);
+            }
         }
+
         int endIndex = indexAnimation();
 
         if (endIndex > viewIndex) {
+
+            for (int i = viewIndex + 1; i <= endIndex; i++) {
+                addView(pointViewList.get(i));
+            }
             viewIndex = endIndex;
-            addView(pointViewList.get(endIndex));
+
         }
 
         //连线
@@ -100,7 +127,6 @@ public class LineView extends ViewGroup implements PointView.onTouchListener {
             float gradient = (next.p_y - start.p_y) * 1f / (next.p_x - start.p_x);
             canvas.drawLine(start.p_x, start.p_y, currentX, (currentX - start.p_x) * gradient + start.p_y, mPaint);
         }
-
     }
 
     /**
@@ -257,12 +283,9 @@ public class LineView extends ViewGroup implements PointView.onTouchListener {
                 view.setPosition((int) (p.x * scalX) + point.x, point.y - (int) (p.y * scalY));
             }
             view.setTouchListener(index, this);
-            view.setMessage("x:" + p.x + " y:" + p.y);
+            view.setMessage(String.valueOf(p.x), String.valueOf(p.y));
             index++;
             pointViewList.add(view);
-        }
-        for (PointView p : pointViewList) {
-            Log.d(TAG, "" + p.p_x);
         }
     }
 
@@ -281,25 +304,49 @@ public class LineView extends ViewGroup implements PointView.onTouchListener {
         invalidate();
     }
 
+    @Override
+    public boolean onTouchEvent(MotionEvent event) {
+        super.onTouchEvent(event);
+        switch (event.getAction()) {
+            case MotionEvent.ACTION_DOWN:
+                Log.d(TAG, "按下");
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
+                    if (animator != null && animator.isRunning()) {
+                        animator.cancel();
+                    }
+                } else {
+                    if (animatorThread != null && animatorThread.isAlive()) {
+                        animatorThread.interrupt();
+                    }
+                }
+                currentX = pointViewList.get(pointViewList.size() - 1).p_x;
+                invalidate();
+                break;
+        }
+        return super.onTouchEvent(event);
+    }
+
     private int timeLength = 0;
     public void setAnimation(final int timeLength) {
         this.timeLength = timeLength;
     }
 
+    private Thread animatorThread;
+    private ValueAnimator animator;
     public void start() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
-            ValueAnimator anim = ValueAnimator.ofInt(pointViewList.get(0).p_x, pointViewList.get(pointViewList.size() - 1).p_x);
-            anim.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+            animator = ValueAnimator.ofInt(pointViewList.get(0).p_x, pointViewList.get(pointViewList.size() - 1).p_x);
+            animator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
                 @Override
                 public void onAnimationUpdate(ValueAnimator animation) {
                     currentX = (Integer) animation.getAnimatedValue();
                     invalidate();
                 }
             });
-            anim.setDuration(timeLength);
-            anim.start();
+            animator.setDuration(timeLength);
+            animator.start();
         } else {
-            new Thread(new Runnable() {
+            animatorThread = new Thread(new Runnable() {
                 @Override
                 public void run() {
                     currentX = pointViewList.get(0).p_x;
@@ -321,7 +368,8 @@ public class LineView extends ViewGroup implements PointView.onTouchListener {
                     }
 
                 }
-            }).start();
+            });
+            animatorThread.start();
         }
     }
 }

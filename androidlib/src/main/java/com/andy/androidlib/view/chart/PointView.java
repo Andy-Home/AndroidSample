@@ -34,7 +34,14 @@ public class PointView extends View {
         p_y = y;
     }
 
-    public String msg;
+    public String x, y;
+
+    public void setMessage(String x, String y) {
+        this.x = x;
+        this.y = y;
+    }
+
+    public String msg = "";
 
     public void setMessage(String msg) {
         this.msg = msg;
