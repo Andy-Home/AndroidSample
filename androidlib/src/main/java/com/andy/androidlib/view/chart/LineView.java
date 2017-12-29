@@ -1,7 +1,6 @@
 package com.andy.androidlib.view.chart;
 
 import android.animation.ValueAnimator;
-import android.annotation.TargetApi;
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Color;
@@ -10,16 +9,12 @@ import android.graphics.Paint;
 import android.graphics.Path;
 import android.graphics.Point;
 import android.os.Build;
-import android.os.Looper;
 import android.util.AttributeSet;
-import android.util.Log;
-import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 
 import com.andy.androidlib.R;
-import com.andy.androidlib.view.Colors;
 import com.andy.androidlib.view.DPValue;
 
 import java.util.ArrayList;
@@ -46,6 +41,7 @@ public class LineView extends ViewGroup implements PointView.onTouchListener {
 
     private X_YView xYView;
     private Paint mPaint, mTextPaint, mDashPaint;
+    private Path path;
 
     private void init() {
         xYView = new X_YView(getContext());
@@ -53,18 +49,20 @@ public class LineView extends ViewGroup implements PointView.onTouchListener {
         mPaint.setStrokeWidth(DPValue.dp2px(2));
         mPaint.setStyle(Paint.Style.FILL);
         mPaint.setAntiAlias(true);
-        mPaint.setColor(Colors.LightSeaGreen);
+        mPaint.setColor(getResources().getColor(R.color.lightSeaGreen));
 
         mTextPaint = new Paint();
         mTextPaint.setAntiAlias(true);
-        mTextPaint.setColor(Colors.Navy);
+        mTextPaint.setColor(getResources().getColor(R.color.navy));
         mTextPaint.setTextSize(DPValue.dp2px(12));
 
         mDashPaint = new Paint();
         mDashPaint.setStrokeWidth(DPValue.dp2px(1));
         mDashPaint.setStyle(Paint.Style.STROKE);
-        mDashPaint.setColor(Colors.Navy);
+        mDashPaint.setColor(getResources().getColor(R.color.navy));
         mDashPaint.setPathEffect(new DashPathEffect(new float[]{10f, 10f, 10f, 10f}, 0));
+
+        path = new Path();
     }
 
     @Override
@@ -91,7 +89,7 @@ public class LineView extends ViewGroup implements PointView.onTouchListener {
         if (touchIndex != -1) {
             PointView v = (PointView) getChildAt(touchIndex + 1);
             //画虚线
-            Path path = new Path();
+            path.reset();
             path.moveTo(v.p_x, v.p_y);
             path.lineTo(xYView.origin.x, v.p_y);        //y
 

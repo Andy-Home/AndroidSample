@@ -2,14 +2,12 @@ package com.andy.androidlib.view.chart;
 
 import android.content.Context;
 import android.graphics.Canvas;
-import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Point;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.view.View;
 
-import com.andy.androidlib.view.Colors;
+import com.andy.androidlib.R;
 import com.andy.androidlib.view.DPValue;
 
 public class X_YView extends View{
@@ -35,7 +33,7 @@ public class X_YView extends View{
         mPaint = new Paint();
         mPaint.setStyle(Paint.Style.FILL);
         mPaint.setStrokeWidth(DPValue.dp2px(1));
-        mPaint.setColor(Colors.RoyalBlue);
+        mPaint.setColor(getResources().getColor(R.color.royalBlue));
     }
 
     public int padding = 0;

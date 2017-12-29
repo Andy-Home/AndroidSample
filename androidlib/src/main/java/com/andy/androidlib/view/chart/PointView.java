@@ -2,14 +2,12 @@ package com.andy.androidlib.view.chart;
 
 import android.content.Context;
 import android.graphics.Canvas;
-import android.graphics.Color;
 import android.graphics.Paint;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 
-import com.andy.androidlib.view.Colors;
+import com.andy.androidlib.R;
 import com.andy.androidlib.view.DPValue;
 
 public class PointView extends View {
@@ -57,7 +55,7 @@ public class PointView extends View {
         Paint mPaint = new Paint();
         mPaint.setAntiAlias(true);
         mPaint.setStyle(Paint.Style.FILL);
-        mPaint.setColor(Colors.LightGreen);
+        mPaint.setColor(getResources().getColor(R.color.lightGreen));
         canvas.drawCircle(radius, radius, radius, mPaint);
     }
 
