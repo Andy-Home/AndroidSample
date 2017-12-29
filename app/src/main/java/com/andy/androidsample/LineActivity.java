@@ -1,22 +1,20 @@
 package com.andy.androidsample;
 
-import android.app.Activity;
 import android.graphics.Point;
 import android.os.Build;
-import android.os.Bundle;
 import android.view.ViewTreeObserver;
 
+import com.andy.androidlib.base.BaseActivity;
 import com.andy.androidlib.view.chart.LineView;
 
 import java.util.ArrayList;
 
-public class MainActivity extends Activity {
+public class LineActivity extends BaseActivity {
     private LineView view;
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
+    public void initView() {
+        setContentView(R.layout.activity_chart_line);
         view = findViewById(R.id.line);
         view.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
             @Override
