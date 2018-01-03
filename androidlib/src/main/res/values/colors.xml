@@ -4,4 +4,16 @@
     <color name="navy">#000080</color>
     <color name="lightSeaGreen">#20B2AA</color>
     <color name="lightGreen">#90EE90</color>
+
+    <!-- 饼状图配色 -->
+    <color name="pie1">#EACF02</color>
+    <color name="pie2">#6C890B</color>
+    <color name="pie3">#ABC327</color>
+    <color name="pie4">#DFB5B7</color>
+    <color name="pie5">#7F1874</color>
+    <color name="pie6">#DB9019</color>
+    <color name="pie7">#5ED5D1</color>
+    <color name="pie8">#1A2D27</color>
+    <color name="pie9">#FF6E97</color>
+    <color name="pie10">#F1AAA6</color>
 </resources>
