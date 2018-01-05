@@ -72,7 +72,8 @@ public class PieView extends View {
         mOneTextPaint = new Paint();
         mOneTextPaint.setAntiAlias(true);
         mOneTextPaint.setColor(Color.BLACK);
-        mOneTextPaint.setTextSize(DPValue.dp2px(8));
+        mOneTextPaint.setTextSize(DPValue.dp2px(12));
+        mOneTextPaint.setTextAlign(Paint.Align.CENTER);
 
         mFormat = new DecimalFormat("##0.00");
     }
@@ -102,9 +103,12 @@ public class PieView extends View {
                 if (info != null && info.content.equals(content)) {
                     mOnePiePaint.setColor(colors[flag]);
                     canvas.drawArc(scalRectF, currentStart, info.radian, true, mOnePiePaint);
+                    canvas.drawText(mFormat.format(content.getPercent() * 100) + "%", scalRectF.centerX(), scalRectF.centerY() - (scalRectF.height() / 4), mOneTextPaint);
+                    canvas.drawText(content.getContent(), scalRectF.centerX(), scalRectF.centerY() + DPValue.dp2px(12), mOneTextPaint);
                     mPiePaint.setColor(Color.WHITE);
                     mPiePaint.setAlpha(alpha);
                     canvas.drawArc(rectF, start, percent, true, mPiePaint);
+
                 } else {
                     canvas.drawArc(rectF, start, percent, true, mPiePaint);
                 }
