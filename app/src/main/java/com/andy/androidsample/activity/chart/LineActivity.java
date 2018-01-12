@@ -1,4 +1,4 @@
-package com.andy.androidsample;
+package com.andy.androidsample.activity.chart;
 
 import android.graphics.Point;
 import android.os.Build;
@@ -6,6 +6,7 @@ import android.view.ViewTreeObserver;
 
 import com.andy.androidlib.base.BaseActivity;
 import com.andy.androidlib.view.chart.LineView;
+import com.andy.androidsample.R;
 
 import java.util.ArrayList;
 

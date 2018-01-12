@@ -10,15 +10,15 @@
         android:name=".base.AppApplication"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".ChartCenterActivity">
+        <activity android:name=".activity.chart.ChartCenterActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".PieActivity" />
-        <activity android:name=".LineActivity" />
+        <activity android:name=".activity.chart.PieActivity" />
+        <activity android:name=".activity.chart.LineActivity" />
     </application>
 
 </manifest>

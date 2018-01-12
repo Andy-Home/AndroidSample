@@ -4,15 +4,9 @@
     android:layout_height="match_parent"
     android:orientation="vertical">
 
-    <Button
-        android:id="@+id/line"
+    <android.support.v7.widget.RecyclerView
+        android:id="@+id/list"
+        android:background="@color/white"
         android:layout_width="match_parent"
-        android:layout_height="40dp"
-        android:text="@string/line_view" />
-
-    <Button
-        android:id="@+id/pie"
-        android:layout_width="match_parent"
-        android:layout_height="40dp"
-        android:text="@string/pie_view" />
+        android:layout_height="match_parent" />
 </LinearLayout>
