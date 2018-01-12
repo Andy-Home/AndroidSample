@@ -234,7 +234,6 @@ public class PieView extends View {
     }
 
     private float currentStart;
-    private Thread animatorThread;
     private RectF scalRectF = rectF;
     private final long timeLength = 800;
 
@@ -280,30 +279,11 @@ public class PieView extends View {
             animationSet.play(animator).with(animator1).with(animator2);
             animationSet.start();
         } else {
-            /*animatorThread = new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    currentX = pointViewList.get(0).p_x;
-                    int maxX = pointViewList.get(pointViewList.size() - 1).p_x;
-                    int period = timeLength / (maxX - currentX);
-                    while (currentX <= maxX) {
-                        post(new Runnable() {
-                            @Override
-                            public void run() {
-                                invalidate();
-                            }
-                        });
-                        try {
-                            Thread.currentThread().sleep(period);
-                        } catch (InterruptedException e) {
-                            e.printStackTrace();
-                        }
-                        currentX += 1;
-                    }
-
-                }
-            });
-            animatorThread.start();*/
+            float minX = getWidth() * 1f / 6;
+            float y = (getHeight() - (minX * 4)) * 1f / 2;
+            scalRectF = new RectF(minX, y, 5 * minX, getHeight() - y);
+            alpha = 0;
+            invalidate();
         }
     }
 
